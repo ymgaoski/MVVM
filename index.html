@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>MVVM</title>
+</head>
+<body>
+  <div id="app">
+      <h3>name: {{name}}</h3>
+      <div class="footer">
+          <h3>age: {{age}}</h3>
+          <h3>color: {{like.color}}</h3>
+          <h3>music: {{like.music}}</h3>
+          <h3>person: {{like.person.name}}</h3>
+      </div>
+      <h4>{{hello}}</h4>
+      <input type="text" v-model="like.person.name" />
+  </div>
+</body>
+
+<!-- <script src="observe.js"></script> -->
+<script src="mvvm.js"></script>
+<script>
+
+  // 人类
+  function Person(){
+    this.name = 'xgao';
+    this.like = ['读书','学习','水果'];
+
+    this.run = function(){
+      console.log('run...');
+    }
+  }
+  // 会先找对象的属性，再找原型上的属性
+  Person.prototype.name = 'qiang';
+  Person.prototype.age = 18;
+
+  // 学生类
+  function Student(){
+    // 组合式继承
+    // 原型对象的数据是共享的，构造函数的对象是不会被共享的
+    // 借调Person构造函数,解决复杂类型不会共享
+    Person.call(this);
+
+    this.clazz = '405';
+    this.name = '学生';
+  }
+
+  // 寄生式继承
+  function Temp(){ }
+  Temp.prototype = Person.prototype;
+  let temp = new Temp();
+  Student.prototype = temp;
+  // 修复construtor
+  temp.constructor = Student;
+  
+
+  Student.prototype.say = function(){
+    console.log('hello');
+  }
+
+  var s = new Student();
+
+  s.like.push('大大');
+
+  console.log(s);
+
+
+
+
+
+
+
+
+
+
+
+
+  var xvue = new XVue({
+      el: '#app',
+      data:{
+        name:'xgao',
+        age: 18,
+        like:{
+          color:'red',
+          music:['夜曲','稻香','演员'],
+          person:{
+            name:'薛之谦'
+          }
+        }
+      },
+      // computed 可以缓存，只是把数据挂在了vm上
+      computed:{
+        hello(){ 
+          return 'like的明星：'+ this.like.person.name + '-------- 年龄：' + this.age;
+        }
+      }
+  });
+
+  // testDep();
+
+  // defineProperty();
+
+  // Object.defineProperty 用于定义新属性，可实现Get,Set的监听
+  function defineProperty(){
+
+    let person = {};
+    // 直接设置属性是无法监听到 get，set
+    person.name = 'xgao';
+    person.age = 18;
+
+    // 1 --- 默认不可修改与删除
+    Object.defineProperty(person,'clazz',{
+      value:'405'
+    })
+    person.clazz = '407';
+    person['clazz'] = '407'
+    delete person.class;
+
+    // 2 --- configurable 配置是否可删除
+    Object.defineProperty(person,'height',{
+      configurable:true,
+      value: '170'
+    })
+    // 3 --- 还是不能修改，只能删除
+    person.height = '180';
+    delete person.height;
+
+    // 4 --- 可修改，删除
+    Object.defineProperty(person,'width',{
+      writable:true,
+      value: '30'
+    })
+    person.width = '40';
+
+    // 5 --- 开启属性遍历，默认定义的属性是无法遍历获取
+    Object.defineProperty(person,'color',{
+      enumerable:true,
+      value: 'red'
+    })
+
+    // 6 --- get,set属性监听,使用该模式就不能再用 value 参数与 writable 参数，二选一
+    let _book;
+    Object.defineProperty(person,'book',{
+      configurable:true,
+      enumerable:true,
+      get:function(){
+        console.log('获取book');
+        return _book;
+      },
+      set:function(newVal){
+        console.log('设置book');
+        _book = newVal;
+      }
+    })
+
+    person.book = '一本好书';
+    console.log(person.book,'book');
+    person.book = '新书';
+    console.log(person.book,'book');
+
+    // 遍历属性
+    for (const key in person) {
+      console.log(key,'----------',person[key]);
+    }
+    
+    console.log(person,'person');
+  }
+  
+  // 发布订阅
+  function testDep(){
+    let dep = new Dep();
+    // 添加订阅
+    dep.addSub(function(){
+      console.log(11111);
+    })
+    // 添加订阅
+    dep.addSub(function(){
+      console.log(22222);
+    })
+    // 添加订阅
+    dep.addSub(function(){
+      console.log(33333);
+    })
+    // 通知
+    dep.notif();
+  }
+
+</script>
+</html>
