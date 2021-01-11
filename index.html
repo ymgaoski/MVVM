@@ -141,7 +141,7 @@
       value: 'red'
     })
 
-    // 6 --- get,set属性监听,使用该模式就不能再用 value 参数与 writable 参数，二选一
+    // 6 --- get,set属性监听,使用该模式就不能再用 value 参数与 writable 参数，二选一 ，configurable 和 enumerable 也可以不需要
     let _book;
     Object.defineProperty(person,'book',{
       configurable:true,
